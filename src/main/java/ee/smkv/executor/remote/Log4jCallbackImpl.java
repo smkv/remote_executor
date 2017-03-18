@@ -5,11 +5,11 @@ import org.apache.log4j.Logger;
 public class Log4jCallbackImpl implements Callback {
 
     private final static Logger log = Logger.getLogger(Log4jCallbackImpl.class);
-    private String server;
+    private SshServer server;
     private int lineNumber;
 
     @Override
-    public void connected(String server) {
+    public void connected(SshServer server) {
         log.info(String.format("Connected to %s", server));
         this.server = server;
     }

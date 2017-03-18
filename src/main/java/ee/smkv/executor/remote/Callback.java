@@ -1,7 +1,7 @@
 package ee.smkv.executor.remote;
 
 public interface Callback {
-    void connected(String server);
+    void connected(SshServer server);
 
     void started(String command);
 

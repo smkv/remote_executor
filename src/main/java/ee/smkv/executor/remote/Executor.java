@@ -10,22 +10,18 @@ import java.util.Properties;
 
 public class Executor {
 
-    private final String host;
-    private final int port;
-    private final String user;
+    private final SshServer sshServer;
     private final String privateKey;
 
-    public Executor(String host, int port, String user, String privateKey) {
-        this.host = host;
-        this.port = port;
-        this.user = user;
+    public Executor(SshServer sshServer, String privateKey) {
+        this.sshServer = sshServer;
         this.privateKey = privateKey;
     }
 
 
     public void execute(String command, Callback callback) throws JSchException, IOException {
         Session session = createSshSession();
-        callback.connected(getServerIdentifier());
+        callback.connected(sshServer);
 
         ChannelExec channel = createExecutionChannel(command, session);
         callback.started(command);
@@ -65,7 +61,7 @@ public class Executor {
     private Session createSshSession() throws JSchException {
         JSch jsch = new JSch();
         jsch.addIdentity(privateKey);
-        Session session = jsch.getSession(user, host, port);
+        Session session = jsch.getSession(sshServer.getUser(), sshServer.getHost(), sshServer.getPort());
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
         session.setConfig(config);
@@ -75,12 +71,8 @@ public class Executor {
     }
 
 
-    private String getServerIdentifier() {
-        return String.format("%s@%s:%d", user, host, port);
-    }
-
     @Override
     public String toString() {
-        return "Executor{" + getServerIdentifier() + "}";
+        return "Executor{" + sshServer + "}";
     }
 }
