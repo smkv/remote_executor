@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/applications")
-public class ApplicationsController {
+public class Applications {
 
     @RequestMapping("")
-
     public String index(){
-        return "applications/index";
+        return "applications";
     }
+
 
 
 
