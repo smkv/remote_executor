@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Applications</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+
+<form action="/executor/execute" method="post" target="output">
+    <input type="text" name="command" />
+    <button type="submit">Execute</button>
+</form>
+
+<iframe name="output" id="output" width="800" height="600">
+
+</iframe>
+
+</body>
+</html>
