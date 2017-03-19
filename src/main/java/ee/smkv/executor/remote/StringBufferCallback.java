@@ -3,6 +3,7 @@ package ee.smkv.executor.remote;
 public class StringBufferCallback implements Callback {
 
     StringBuffer buffer = new StringBuffer();
+    boolean done;
 
     @Override
     public void connected(SshServer server) {
@@ -22,6 +23,7 @@ public class StringBufferCallback implements Callback {
     @Override
     public void done(int exitStatus) {
         appendLineToBuffer("Exit status: " + exitStatus);
+        done = true;
     }
 
     @Override
@@ -31,6 +33,10 @@ public class StringBufferCallback implements Callback {
 
     private void appendLineToBuffer(String line) {
         buffer.append(line).append('\n');
+    }
+
+    public boolean isDone() {
+        return done;
     }
 
     @Override
