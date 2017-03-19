@@ -19,25 +19,44 @@ public class Executor {
     }
 
 
-    public void execute(String command, Callback callback) throws JSchException, IOException {
-        Session session = createSshSession();
-        callback.connected(sshServer);
+    public void execute(String command, Callback callback) {
+        Session session = null;
+        try {
+            session = createSshSession();
+            callback.connected(sshServer);
 
-        ChannelExec channel = createExecutionChannel(command, session);
-        callback.started(command);
+            ChannelExec channel = null;
+            try {
+                channel = createExecutionChannel(command, session);
+                callback.started(command);
 
+                readCommandOutput(getPipedInputStream(channel), callback);
 
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            } finally {
+                if (channel != null) {
+                    channel.disconnect();
+                    callback.done(channel.getExitStatus());
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            if (session != null) {
+                session.disconnect();
+                callback.disconnected();
+            }
+        }
+    }
+
+    private PipedInputStream getPipedInputStream(ChannelExec channel) throws IOException {
         PipedOutputStream pos = new PipedOutputStream();
         PipedInputStream pis = new PipedInputStream(pos);
         channel.setOutputStream(pos);
         channel.setExtOutputStream(pos);
-
-        readCommandOutput(pis, callback);
-
-        callback.done(channel.getExitStatus());
-        channel.disconnect();
-        session.disconnect();
-        callback.disconnected();
+        return pis;
     }
 
     private void readCommandOutput(PipedInputStream pis, Callback callback) throws IOException {
