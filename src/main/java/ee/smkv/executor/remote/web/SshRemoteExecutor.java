@@ -50,8 +50,7 @@ public class SshRemoteExecutor {
     public String execute(String command, HttpServletResponse response) throws ParseException {
         StringBufferCallback callback = new StringBufferCallback();
         executorService.execute(() -> remoteExecutor.execute(command, callback));
-        String key = UUID.randomUUID().toString();
-        executions.put(key, callback);
+        String key = storeCallbackAndReturnKey(callback);
         response.addHeader("Refresh", "1; url=/remoteExecutor/log?key=" + key);
         return callback.toString();
     }
@@ -59,12 +58,22 @@ public class SshRemoteExecutor {
     @RequestMapping(value = "/log", method = RequestMethod.GET, produces = "text/plain")
     @ResponseBody
     public String log(String key, HttpServletResponse response){
-        StringBufferCallback callback = executions.get(key);
+        StringBufferCallback callback = getCallback(key);
         if (!callback.isDone()) {
             response.addHeader("Refresh", "1; url=/remoteExecutor/log?key=" + key);
         }
         return callback.toString();
 
+    }
+
+    private StringBufferCallback getCallback(String key) {
+        return executions.get(key);
+    }
+
+    private String storeCallbackAndReturnKey(StringBufferCallback callback) {
+        String key = UUID.randomUUID().toString();
+        executions.put(key, callback);
+        return key;
     }
 
 }
