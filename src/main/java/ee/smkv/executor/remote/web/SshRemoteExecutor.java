@@ -42,7 +42,7 @@ public class SshRemoteExecutor {
 
     @RequestMapping()
     public String index() {
-        return "remoteExecutor";
+        return "executor";
     }
 
     @RequestMapping(value = "/execute", method = RequestMethod.POST, produces = "text/plain")
