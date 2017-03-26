@@ -1,19 +1,59 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html layout:decorator="layout" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.thymeleaf.org">
 <head>
-    <title>Applications</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
 </head>
-<body>
+<body style="padding:10px;">
+<div class="container" layout:fragment="content">
 
-<form action="/executor/execute" method="post" target="output">
-    <input type="text" name="command" />
-    <button type="submit">Execute</button>
-</form>
+    <div class="jumbotron">
+        <h1>Execute remotely</h1>
+        <div class="input-group">
+            <input id="command" type="text" class="form-control" placeholder="Example: ls -lah ..." />
+            <span class="input-group-btn">
+                <button id="executeBtn" class="btn btn-success" type="button">Execute</button>
+            </span>
+        </div>
+    </div>
 
-<iframe name="output" id="output" width="800" height="600">
+    <pre id="output" class="pre" style="display:none;"></pre>
 
-</iframe>
+    <script>
+        $(function(){
+            var EOT = '\u2404';
+            var loadingIcon = $('<img />', {'src':'/images/ajax-loader.gif'});
+            function loadExecutionOutput(key){
+                var container = $('#output');
+                var loadedOutput = container.text();
 
+
+                $.get('/remoteExecutor/log' , {key: key, offset: loadedOutput.length },function(data){
+                    loadingIcon.remove();
+                    container.append(data);
+                    if(data.length == 0 || data.charAt(data.length-1) != EOT){
+                        container.append(loadingIcon);
+                        setTimeout(function(){loadExecutionOutput(key)} , 1000);
+                    }
+                });
+            }
+            function executeCommand(command){
+                $('#output').text('').show();
+                $.post('/remoteExecutor/execute', {command: command}, loadExecutionOutput);
+            }
+
+            $('#executeBtn').on('click', function(){
+                executeCommand( $('#command').val());
+            });
+
+             $('#command').on('keypress' , function(event){
+                if(event.which == 13){
+                    executeCommand( $('#command').val());
+                }
+             });
+        });
+    </script>
+
+
+</div>
 </body>
 </html>

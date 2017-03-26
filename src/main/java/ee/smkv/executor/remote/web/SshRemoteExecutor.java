@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,8 @@ import java.util.concurrent.Executors;
 @Controller
 @RequestMapping("/remoteExecutor")
 public class SshRemoteExecutor {
+
+    public static final String EOT = "\u2404";
 
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Map<String, StringBufferCallback> executions = new HashMap<>();
@@ -47,23 +48,26 @@ public class SshRemoteExecutor {
 
     @RequestMapping(value = "/execute", method = RequestMethod.POST, produces = "text/plain")
     @ResponseBody
-    public String execute(String command, HttpServletResponse response) throws ParseException {
+    public String execute(String command) throws ParseException {
         StringBufferCallback callback = new StringBufferCallback();
         executorService.execute(() -> remoteExecutor.execute(command, callback));
-        String key = storeCallbackAndReturnKey(callback);
-        response.addHeader("Refresh", "1; url=/remoteExecutor/log?key=" + key);
-        return callback.toString();
+        return storeCallbackAndReturnKey(callback);
+
     }
 
     @RequestMapping(value = "/log", method = RequestMethod.GET, produces = "text/plain")
     @ResponseBody
-    public String log(String key, HttpServletResponse response){
+    public String log(String key, int offset) {
         StringBufferCallback callback = getCallback(key);
-        if (!callback.isDone()) {
-            response.addHeader("Refresh", "1; url=/remoteExecutor/log?key=" + key);
+        String executionOutput = callback.toString();
+        if (offset > executionOutput.length()) {
+            offset = executionOutput.length();
         }
-        return callback.toString();
-
+        String incrementalOutput = executionOutput.substring(offset);
+        if (callback.isDone()) {
+            incrementalOutput += EOT;
+        }
+        return incrementalOutput;
     }
 
     private StringBufferCallback getCallback(String key) {
