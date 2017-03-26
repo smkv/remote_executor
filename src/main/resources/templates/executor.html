@@ -1,13 +1,11 @@
 <!DOCTYPE HTML>
 <html layout:decorator="layout" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.thymeleaf.org">
-<head>
-
-</head>
-<body style="padding:10px;">
+<body>
 <div class="container" layout:fragment="content">
 
     <div class="jumbotron">
         <h1>Execute remotely</h1>
+        <p th:text="${sshServer}" class="text-muted">SshServer</p>
         <div class="input-group">
             <input id="command" type="text" class="form-control" placeholder="Example: ls -lah ..." />
             <span class="input-group-btn">
