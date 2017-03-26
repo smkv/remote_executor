@@ -56,6 +56,7 @@ public class Executor {
         PipedInputStream pis = new PipedInputStream(pos);
         channel.setOutputStream(pos);
         channel.setExtOutputStream(pos);
+        channel.setErrStream(pos);
         return pis;
     }
 
