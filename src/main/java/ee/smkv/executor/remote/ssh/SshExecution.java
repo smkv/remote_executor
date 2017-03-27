@@ -12,8 +12,7 @@ public class SshExecution implements Execution {
 
     private final Command command;
     private final StringBuilder outputStringBuilder = new StringBuilder();
-    private int exitCode = -1;
-    private Future future;
+    private Future<Integer> future;
 
 
     SshExecution(Command command) {
@@ -38,7 +37,11 @@ public class SshExecution implements Execution {
 
     @Override
     public int getExitCode() {
-        return exitCode;
+        try {
+            return future.get(0, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     @Override
@@ -47,21 +50,24 @@ public class SshExecution implements Execution {
     }
 
     @Override
-    public void waitUtilFinish(long timeout , TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
+    public void waitUtilFinish(long timeout, TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
         future.get(timeout, unit);
     }
 
-    void done(int exitCode) {
-        this.exitCode = exitCode;
-    }
 
     void appendOutputLine(String line) {
         outputStringBuilder.append(line).append('\n');
     }
 
-    void setFuture(Future future) {
+    void setFuture(Future<Integer> future) {
         this.future = future;
     }
 
 
+    @Override
+    public void cancel() {
+        if (!isFinished()) {
+            future.cancel(true);
+        }
+    }
 }

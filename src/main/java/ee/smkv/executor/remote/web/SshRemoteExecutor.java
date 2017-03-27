@@ -76,4 +76,12 @@ public class SshRemoteExecutor {
         return key;
     }
 
+    @RequestMapping(value = "/cancel", method = RequestMethod.POST, produces = "text/plain")
+    @ResponseBody
+    public boolean cancel(String key) {
+        Execution execution = getExecution(key);
+        execution.cancel();
+        return true;
+    }
+
 }

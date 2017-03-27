@@ -15,7 +15,7 @@
     </div>
 
     <pre id="output" class="pre" style="display:none;"></pre>
-
+    <button id="cancelCurrentExecutionBtn" type="button" class="btn btn-xs btn-default" style="display:none;">Cancel</button>
     <script>
         $(function(){
             var EOT = '\u2404';
@@ -23,6 +23,7 @@
             function loadExecutionOutput(key){
                 var container = $('#output');
                 var loadedOutput = container.text();
+                $('#cancelCurrentExecutionBtn').attr('data-key', key);
 
 
                 $.get('/remoteExecutor/log' , {key: key, offset: loadedOutput.length },function(data){
@@ -31,11 +32,14 @@
                     if(data.length == 0 || data.charAt(data.length-1) != EOT){
                         container.append(loadingIcon);
                         setTimeout(function(){loadExecutionOutput(key)} , 1000);
+                    }else{
+                        $('#cancelCurrentExecutionBtn').hide();
                     }
                 });
             }
             function executeCommand(command){
                 $('#output').text('').show();
+                $('#cancelCurrentExecutionBtn').prop('disabled' , false).show();
                 $.post('/remoteExecutor/execute', {command: command}, loadExecutionOutput);
             }
 
@@ -47,6 +51,11 @@
                 if(event.which == 13){
                     executeCommand( $('#command').val());
                 }
+             });
+
+             $('#cancelCurrentExecutionBtn').on('click',function(){
+                $('#cancelCurrentExecutionBtn').prop('disabled' , true);
+                $.post('/remoteExecutor/cancel', {key: $('#cancelCurrentExecutionBtn').attr('data-key')});
              });
         });
     </script>

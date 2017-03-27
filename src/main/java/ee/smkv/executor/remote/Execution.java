@@ -18,4 +18,5 @@ public interface Execution {
 
     void waitUtilFinish(long timeout , TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException;
 
+    void cancel();
 }

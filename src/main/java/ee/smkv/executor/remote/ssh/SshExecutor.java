@@ -26,12 +26,13 @@ public class SshExecutor implements Executor , DisposableBean {
     @Override
     public Execution execute(Command command) {
         SshExecution execution = new SshExecution(command);
-        Future<?> future = executorService.submit(() -> execute(execution));
+        Future<Integer> future = executorService.submit(() -> execute(execution));
         execution.setFuture(future);
         return execution;
     }
 
-    private void execute(SshExecution execution) {
+    private Integer execute(SshExecution execution) {
+        Integer exitStatus = -1;
         Session session = null;
         try {
             session = createSshSession();
@@ -46,7 +47,7 @@ public class SshExecutor implements Executor , DisposableBean {
             } finally {
                 if (channel != null) {
                     channel.disconnect();
-                    execution.done(channel.getExitStatus());
+                    exitStatus = channel.getExitStatus();
                 }
             }
 
@@ -57,6 +58,7 @@ public class SshExecutor implements Executor , DisposableBean {
                 session.disconnect();
             }
         }
+        return exitStatus;
     }
 
     private PipedInputStream getPipedInputStream(ChannelExec channel) throws IOException {
