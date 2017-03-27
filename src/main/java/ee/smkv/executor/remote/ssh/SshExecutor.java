@@ -1,26 +1,22 @@
 package ee.smkv.executor.remote.ssh;
 
 import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import ee.smkv.executor.remote.*;
+import ee.smkv.executor.remote.Command;
+import ee.smkv.executor.remote.Execution;
+import ee.smkv.executor.remote.Executor;
 import org.springframework.beans.factory.DisposableBean;
 
 import java.io.*;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class SshExecutor implements Executor , DisposableBean {
+public class SshExecutor implements Executor, DisposableBean {
     private final SshServer sshServer;
-    private final String privateKey;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public SshExecutor(SshServer sshServer, String privateKey) {
+    public SshExecutor(SshServer sshServer) {
         this.sshServer = sshServer;
-        this.privateKey = privateKey;
     }
 
     @Override
@@ -32,33 +28,11 @@ public class SshExecutor implements Executor , DisposableBean {
     }
 
     private Integer execute(SshExecution execution) {
-        Integer exitStatus = -1;
-        Session session = null;
         try {
-            session = createSshSession();
-
-            ChannelExec channel = null;
-            try {
-                channel = createExecutionChannel(execution.getCommand(), session);
-                readCommandOutput(getPipedInputStream(channel), execution);
-
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } finally {
-                if (channel != null) {
-                    channel.disconnect();
-                    exitStatus = channel.getExitStatus();
-                }
-            }
-
+            return sshServer.doInExecutionChannel(execution.getCommand() , channel -> readCommandOutput(getPipedInputStream(channel), execution));
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
-        } finally {
-            if (session != null) {
-                session.disconnect();
-            }
         }
-        return exitStatus;
     }
 
     private PipedInputStream getPipedInputStream(ChannelExec channel) throws IOException {
@@ -80,26 +54,8 @@ public class SshExecutor implements Executor , DisposableBean {
         }
     }
 
-    private ChannelExec createExecutionChannel(Command command, Session session) throws JSchException {
-        ChannelExec channel = (ChannelExec) session.openChannel("exec");
-        channel.setCommand(command.getCommand());
-
-        channel.connect();
-        return channel;
-    }
 
 
-    private Session createSshSession() throws JSchException {
-        JSch jsch = new JSch();
-        jsch.addIdentity(privateKey);
-        Session session = jsch.getSession(sshServer.getUser(), sshServer.getHost(), sshServer.getPort());
-        Properties config = new Properties();
-        config.put("StrictHostKeyChecking", "no");
-        session.setConfig(config);
-        session.setPassword(privateKey);
-        session.connect();
-        return session;
-    }
 
     @Override
     public String toString() {

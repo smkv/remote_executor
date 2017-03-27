@@ -2,6 +2,8 @@ package ee.smkv.executor.remote.web;
 
 import ee.smkv.executor.remote.*;
 import ee.smkv.executor.remote.ssh.SshExecutor;
+import ee.smkv.executor.remote.ssh.SshServer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,14 +24,14 @@ public class SshRemoteExecutor {
 
     private Map<String, Execution> executions = new HashMap<>();
     private Executor remoteExecutor;
+
+    @Autowired
     private SshServer sshServer;
 
 
     @PostConstruct
     public void init() throws ParseException {
-        sshServer = SshServer.fromString(Config.getProperty("remote.server"));
-        String privateKey = Config.getProperty("keys.private");
-        remoteExecutor = new SshExecutor(sshServer, privateKey);
+        remoteExecutor = new SshExecutor(sshServer);
     }
 
     @ModelAttribute
@@ -46,7 +48,6 @@ public class SshRemoteExecutor {
     @RequestMapping(value = "/execute", method = RequestMethod.POST, produces = "text/plain")
     @ResponseBody
     public String execute(String command) throws ParseException {
-
         return storeCallbackAndReturnKey(remoteExecutor.execute(new Command(command)));
 
     }

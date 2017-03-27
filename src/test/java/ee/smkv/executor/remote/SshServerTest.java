@@ -1,5 +1,6 @@
 package ee.smkv.executor.remote;
 
+import ee.smkv.executor.remote.ssh.SshServer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
