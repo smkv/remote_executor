@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html layout:decorator="layout" th:with="currentPage='browser'" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.thymeleaf.org">
+<body>
+<div class="container" layout:fragment="content">
+
+    <div class="jumbotron">
+        <h1>Browse remote server</h1>
+        <p th:text="${sshServer}" class="text-muted">SshServer</p>
+    </div>
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <form>
+                <div class="row">
+                    <div class="col-md-1">
+                        <label for="browserPath">Directory</label>
+                    </div>
+                    <div class="col-md-11">
+                        <div class="input-group">
+                            <input th:value="${path}" name="path" type="text" class="form-control" id="browserPath"
+                                   placeholder="Remote server path"/>
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="submit">Show</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="pabel-body">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>File name</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry: ${list}">
+                    <td>
+                        <div th:switch="${entry.attrs.dir}">
+                            <a th:case="true" th:href="|/remoteFileSystem?path=${path}/${entry.filename}|"
+                               th:text="${entry.filename}" href="#">
+                                direcory
+                            </a>
+
+                            <a th:case="false" th:href="|/remoteFileSystem/download?path=${path}/${entry.filename}|"
+                               th:text="${entry.filename}" href="#">
+                                file
+                            </a>
+                        </div>
+                    </td>
+                    <td th:text="${entry.attrs.size}">0kB</td>
+                    <td th:text="${entry.attrs.mtimeString}">today</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-footer">
+            <form action="remoteFileSystem/upload" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="path" th:value="${path}"/>
+                <div class="input-group">
+                    <input name="file" type="file"/>
+                    <span class="input-group-btn">
+                                <button class="btn btn-primary" type="submit">Upload</button>
+                            </span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>

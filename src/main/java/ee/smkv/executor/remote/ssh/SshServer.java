@@ -1,12 +1,10 @@
 package ee.smkv.executor.remote.ssh;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 import ee.smkv.executor.remote.Command;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -107,11 +105,30 @@ public class SshServer {
         return exitCode.get();
     }
 
+    public void doInSftpChannel(SftpChannelTemplate template) throws Exception {
+        doInSession(session -> {
+            ChannelSftp channel = null;
+            try {
+                channel = createSftpChannel(session);
+                template.withSftpChannel(channel);
+            } finally {
+                if (channel != null) {
+                    channel.disconnect();
+                }
+            }
+        });
+    }
+
 
     private ChannelExec createExecutionChannel(Command command, Session session) throws JSchException {
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setCommand(command.getCommand());
+        channel.connect();
+        return channel;
+    }
 
+    private ChannelSftp createSftpChannel(Session session) throws JSchException {
+        ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
         channel.connect();
         return channel;
     }

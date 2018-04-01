@@ -29,7 +29,8 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="/remoteExecutor">Execute</a></li>
+                <li th:classappend="${currentPage == 'executor'} ? 'active'"><a href="/remoteExecutor">Execute</a></li>
+                <li th:classappend="${currentPage == 'browser'} ? 'active'"><a href="/remoteFileSystem">Browser</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Username</a></li>
@@ -37,7 +38,6 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
-
 
 <div class="container" layout:fragment="content">
     Hello world!
