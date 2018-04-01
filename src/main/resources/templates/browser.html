@@ -7,27 +7,28 @@
     <div class="jumbotron">
         <h1>Browse remote server</h1>
         <p th:text="${sshServer}" class="text-muted">SshServer</p>
+        <form>
+            <div class="row">
+                <div class="col-md-1">
+                    <label for="browserPath">Directory</label>
+                </div>
+                <div class="col-md-11">
+                    <div class="input-group">
+                        <input th:value="${path}" name="path" type="text" class="form-control" id="browserPath"
+                               placeholder="Remote server path"/>
+                        <span class="input-group-btn">
+                                <button class="btn btn-primary" type="submit">Show</button>
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <form>
-                <div class="row">
-                    <div class="col-md-1">
-                        <label for="browserPath">Directory</label>
-                    </div>
-                    <div class="col-md-11">
-                        <div class="input-group">
-                            <input th:value="${path}" name="path" type="text" class="form-control" id="browserPath"
-                                   placeholder="Remote server path"/>
-                            <span class="input-group-btn">
-                                <button class="btn btn-primary" type="submit">Show</button>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </form>
+            Directory '<span th:text="${path}"></span>' content
         </div>
         <div class="pabel-body">
             <table class="table">
