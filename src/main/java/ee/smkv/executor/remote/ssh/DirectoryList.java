@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class DirectoryList implements SftpChannelTemplate {
+public class DirectoryList implements SftpChannelTemplate, ChannelSftp.LsEntrySelector {
+
     private final String path;
-    private List<ChannelSftp.LsEntry> list = Collections.emptyList();
+    private List<ChannelSftp.LsEntry> list = new ArrayList<>();
 
     public DirectoryList(String path) {
         this.path = path;
@@ -16,18 +17,7 @@ public class DirectoryList implements SftpChannelTemplate {
 
     @Override
     public void withSftpChannel(ChannelSftp channel) throws Exception {
-        ArrayList<ChannelSftp.LsEntry> entries = new ArrayList<>();
-        channel.ls(path, entry -> {
-            if (!isHidden(entry)) {
-                entries.add(entry);
-            }
-            return ChannelSftp.LsEntrySelector.CONTINUE;
-        });
-        list = Collections.unmodifiableList(entries);
-    }
-
-    private boolean isHidden(ChannelSftp.LsEntry entry) {
-        return entry.getFilename().startsWith(".");
+        channel.ls(path, this);
     }
 
     public String getPath() {
@@ -37,4 +27,17 @@ public class DirectoryList implements SftpChannelTemplate {
     public List<ChannelSftp.LsEntry> getList() {
         return list;
     }
+
+    @Override
+    public int select(ChannelSftp.LsEntry entry) {
+        if (!isHidden(entry)) {
+            list.add(entry);
+        }
+        return ChannelSftp.LsEntrySelector.CONTINUE;
+    }
+
+    protected boolean isHidden(ChannelSftp.LsEntry entry) {
+        return entry.getFilename().startsWith(".");
+    }
+
 }
